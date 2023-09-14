@@ -3,7 +3,7 @@ from optparse import *
 
 parser = OptionParser()
 parser.add_option("-i", "--interface", help="Interface to change its MAC address", dest="INTERFACE")
-parser.add_option("-M", "--MAC", dest="MAC ADDRESS", help="define the new MAC Address")
+parser.add_option("-M", "--MAC", dest="new_mac", help="define the new MAC Address")
 (options, args) = parser.parse_args()
 
 
