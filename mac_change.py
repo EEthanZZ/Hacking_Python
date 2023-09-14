@@ -17,7 +17,7 @@ def get_arguments():
     return parser.parse_args()
 
 
-(options, args) = parser.parse_args()
+(options, args) = get_arguments()
 change_mac(options.interface, options.new_mac)
 
 
