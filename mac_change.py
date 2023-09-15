@@ -22,14 +22,24 @@ def get_arguments():
     return options
 
 
+def get_current_mac(interface):
+    ifconfig_result = subprocess.check_output(["ifconfig", interface]).decode("utf-8")
+    mac_add_search_result = re.search(r"(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}", ifconfig_result)
+    if mac_add_search_result:
+        return mac_add_search_result.group(0)
+    else:
+        print("failed to read")
+
+
 options = get_arguments()
+current_mac = get_current_mac(options.interface)
+print(f"The current MAC add is {str(current_mac)}")
 change_mac(options.interface, options.new_mac)
-ifconfig_result = subprocess.check_output(["ifconfig", options.interface]).decode("utf-8")
-print(ifconfig_result)
-
-mac_add_search_result = re.search(r"(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}", ifconfig_result)
-print(mac_add_search_result.group(0))
-
+current_mac = get_current_mac(options.interface)
+if current_mac == options.new_mac:
+    print(f"Successfully changed to {current_mac}")
+else:
+    print("not changed")
 """
 subprocess.call(f"ifconfig {interface} down", shell=True)
 subprocess.call(f"ifconfig {interface} hw ether {new_mac} ", shell=True)
