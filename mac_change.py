@@ -23,8 +23,8 @@ def get_arguments():
 
 
 def get_current_mac(interface):
-    ifconfig_result = subprocess.check_output(["ifconfig", interface]).decode("utf-8")
-    mac_add_search_result = re.search(r"(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}", ifconfig_result)
+    ifconfig_result = subprocess.check_output(["ifconfig", interface])
+    mac_add_search_result = re.search(r"(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}", str(ifconfig_result))
     if mac_add_search_result:
         return mac_add_search_result.group(0)
     else:
