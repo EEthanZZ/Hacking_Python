@@ -1,5 +1,6 @@
 import subprocess
 from optparse import *
+import re
 
 
 def change_mac(interface, new_mac):
@@ -23,8 +24,11 @@ def get_arguments():
 
 options = get_arguments()
 change_mac(options.interface, options.new_mac)
-ifconfig_result = subprocess.check_call(["ifconfig", options.interface])
+ifconfig_result = subprocess.check_output(["ifconfig", options.interface]).decode("utf-8")
 print(ifconfig_result)
+
+mac_add_search_result = re.search(r"(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}", ifconfig_result)
+print(mac_add_search_result.group(0))
 
 """
 subprocess.call(f"ifconfig {interface} down", shell=True)
