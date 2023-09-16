@@ -10,11 +10,17 @@ def scan(ip):
     # print(broadcast.summary())
     arp_broadcast = broadcast/arp_request
     # arp_broadcast.show()
-    ans_list= scapy.srp(arp_broadcast, timeout=1)[0]
+    ans_list = scapy.srp(arp_broadcast, timeout=1, verbose=False)[0]
+    print("IP\t\t\tMAC\n---------------------------------------------")
     for i in ans_list:
-        print(f"client MAC = {i[1].hwsrc}")
-        print(f"client IP = {i[1].psrc}")
-        print("------------\n------------")
+        print(f"{i[1].hwsrc}\t{i[1].psrc}")
+    print()
+    print()
+    client_list = []
+    for i in ans_list:
+        client_dict = {f"ip: {i[1].psrc}, mac: {i[1].hwsrc}"}
+        client_list.append(client_dict)
+    print(client_list)
 
 
 scan("192.168.58.2/24")
