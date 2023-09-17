@@ -40,7 +40,7 @@ while keep_looping:
     spoof("192.168.159.133", "192.168.159.2")
     spoof("192.168.159.2", "192.168.159.133")
     i += 2
-    print(f"\rsending the {i} packets"),
+    print(f"\rsending the {i} packets", end="")
     sys.stdout.flush()
     time.sleep(2)
 
