@@ -1,6 +1,17 @@
 #!/usr/bin/env python
 
 import scapy.all as scapy
+from optparse import *
+
+
+def get_argument():
+    parser = OptionParser()
+    parser.add_option("-t", "--target", help="define the target network", dest="target")
+    (options,args) = parser.parse_args()
+    if not options.target:
+        parser.error("please specify the network")
+    else:
+        return options
 
 
 def scan(ip):
@@ -26,6 +37,7 @@ def print_result(result_list2):
         print(f"{i['ip']}\t\t{i['mac']}")
 
 
-result_list = scan("192.168.58.2/24")
+options = get_argument()
+result_list = scan(options.target)
 #print(result_list)
 print_result(result_list)
