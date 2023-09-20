@@ -3,19 +3,24 @@ import scapy.all as scapy
 
 
 file_formats = [".exe", ".jpeg", ".pdf"]
-
+ack_list = []
 def process_packet(packet):
     scapy_packets = scapy.IP(packet.get_payload())
+    tcp_packet = scapy_packets[scapy.TCP]
     if scapy_packets.haslayer(scapy.RAW): # all http packets
-        if scapy_packets[scapy.TCP].dport == 80:
+        if tcp_packet.dport == 80:
             print("HTTP Request:")
             for format in file_formats:
                 if format in scapy_packets[scapy.RAW].load:
+                    ack_list.append(tcp_packet.ack)
                     print("[+] Download Request:")
                     print(packet.show())
-        elif scapy_packets[scapy.TCP].sport == 80:
-            print("HTTP Response:")
-            print(packet.show())
+        elif tcp_packet.sport == 80:
+            seq = tcp_packet.seq
+            if seq in ack_list:
+                ack_list.remove(seq)
+                print("HTTP Response:")
+                print(packet.show())
 
 # packet.accept()
     """
