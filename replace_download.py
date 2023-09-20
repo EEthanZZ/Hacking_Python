@@ -2,12 +2,17 @@ import netfilterqueue as net
 import scapy.all as scapy
 
 
+file_formats = [".exe", ".jpeg", ".pdf"]
+
 def process_packet(packet):
     scapy_packets = scapy.IP(packet.get_payload())
     if scapy_packets.haslayer(scapy.RAW): # all http packets
         if scapy_packets[scapy.TCP].dport == 80:
             print("HTTP Request:")
-            print(packet.show())
+            for format in file_formats:
+                if format in scapy_packets[scapy.RAW].load:
+                    print("[+] Download Request:")
+                    print(packet.show())
         elif scapy_packets[scapy.TCP].sport == 80:
             print("HTTP Response:")
             print(packet.show())
