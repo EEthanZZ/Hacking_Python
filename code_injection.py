@@ -18,9 +18,9 @@ def process_packet(pkt):
     if scapy_packet.haslayer(scapy.Raw):
         if scapy_packet[scapy.TCP].dport == 80:
             print("[+] HTTP Request")
-            modified_load = re.sub("Accept-Encoding:.*?\\r\\n", "", scapy_packet[scapy.Raw].load)
+            modified_load = re.sub("Accept-Encoding:.*?\\r\\n", "", scapy_packet[scapy.Raw].load.decode('utf-8'))
             new_packet = set_load(scapy_packet, modified_load)
-            pkt.setfieldval(bytes(new_packet))
+            pkt.set_payload(bytes(new_packet))
         elif scapy_packet[scapy.TCP].sport == 80:
             print("[+] HTTP Response")
             print(scapy_packet.show())
